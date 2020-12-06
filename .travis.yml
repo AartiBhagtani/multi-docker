@@ -1,0 +1,23 @@
+sudo: required
+services:
+  - docker 
+
+before_install:
+  - docker build -t aartibhagtani/react-test -f ./client/Dockerfile.dev ./client
+
+script: 
+  - docker run aartibhagtani/react-test npm test -- --coverage
+
+after_success: 
+  - docker build -t aartibhagtani/multi-container-client ./client
+  - docker build -t aartibhagtani/multi-container-nginx ./nginx
+  - docker build -t aartibhagtani/multi-container-server ./server
+  - docker build -t aartibhagtani/multi-container-worker ./worker
+  # login to github
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # push above images to docker hub
+  - docker push aartibhagtani/multi-container-client
+  - docker push aartibhagtani/multi-container-nginx
+  - docker push aartibhagtani/multi-container-server
+  - docker push aartibhagtani/multi-container-worker
+  
